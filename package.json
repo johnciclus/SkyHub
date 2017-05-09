@@ -5,10 +5,13 @@
     "start": "node main.js"
   },
   "dependencies": {
+    "assert": "^1.4.1",
     "body-parser": "~1.17.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.3",
     "express": "~4.15.2",
+    "fs": "0.0.1-security",
+    "jimp": "^0.2.27",
     "mongodb": "^2.2.26",
     "morgan": "~1.8.1",
     "pug": "~2.0.0-beta11",
