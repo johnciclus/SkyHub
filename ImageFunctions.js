@@ -3,18 +3,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var request = require("request");
 var Jimp = require("jimp");
 var fs = require("fs");
-function download(uri, path, name, callback) {
-    request.head(uri, function (err, res, body) {
+/**
+ * Download an image and saves it to disk
+ * @param url
+ * @param path
+ * @param name
+ * @param callback
+ */
+function download(url, path, name, callback) {
+    request.head(url, function (err, res, body) {
         var filename = path + name + ".jpg";
-        request(uri).pipe(fs.createWriteStream(filename)).on('close', function () {
-            callback(name);
+        request(url).pipe(fs.createWriteStream(filename)).on('close', function () {
+            var imageObject = {
+                url: "http://localhost:3000/image/" + name + ".jpg",
+                name: name,
+                image: {
+                    data: fs.readFileSync(filename),
+                    contentType: 'image/jpeg'
+                }
+            };
+            callback(imageObject);
         });
     });
 }
 exports.download = download;
-function transform(filename, size, callback) {
+/**
+ * Transform an image and saves it to disk
+ * @param object
+ * @param size
+ * @param callback
+ */
+function transform(object, size, callback) {
     var path = __dirname + '/public/images/';
-    Jimp.read(path + filename + '.jpg', function (err, image) {
+    var name = object.name + "-" + size;
+    Jimp.read(path + object.name + '.jpg', function (err, image) {
         if (err)
             throw err;
         var width = 320;
@@ -33,7 +55,17 @@ function transform(filename, size, callback) {
                 height = 480;
                 break;
         }
-        image.resize(width, height).write(path + filename + "-" + size + ".jpg");
+        image.resize(width, height).write(path + name + ".jpg", function () {
+            var imageObject = {
+                url: "http://localhost:3000/image/" + name + ".jpg",
+                name: name,
+                image: {
+                    data: fs.readFileSync(path + name + ".jpg"),
+                    contentType: 'image/jpeg'
+                }
+            };
+            callback(imageObject);
+        });
     });
 }
 exports.transform = transform;

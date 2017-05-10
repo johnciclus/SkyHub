@@ -1,58 +1,85 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var mongodb = require("mongodb");
-var server = new mongodb.Server('localhost', 27017, { auto_reconnect: true });
-var db = new mongodb.Db('skyhub', server, { w: 1 });
-var Images;
-db.open(function () { });
-db.collection('images', function (error, images_collection) {
-    if (error) {
-        console.error(error);
-        return;
-    }
-    Images = images_collection;
+var mongoose = require("mongoose");
+var db = mongoose.connection;
+mongoose.Promise = global.Promise;
+/**
+ * Connect with database service and define database
+ */
+mongoose.connect('localhost', 'skyhub');
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function () {
+    console.log('MondgoDB is connected!');
 });
-function setImage(image, callback) {
-    Images.insertOne(image, function (error, result) {
+/**
+ * Define Image Schema for working with images
+ * @type {mongoose.Schema}
+ */
+var ImageSchema = new mongoose.Schema({
+    url: String,
+    name: String,
+    image: { data: Buffer, contentType: String }
+});
+/**
+ * Creates a Image Model
+ */
+var Image = mongoose.model('Image', ImageSchema);
+/**
+ * Public function for remove all data in Image Collection
+ */
+function remove() {
+    //mongoose.connection.on('open', function (){
+    Image.remove(function (err, result) {
+        if (err)
+            throw err;
+        console.log('removed old docs');
+    });
+    //});
+}
+exports.remove = remove;
+/**
+ * Public function for save an image in Image Collection
+ * @param object
+ * @param callback
+ */
+function setImage(object, callback) {
+    var image = new Image(object);
+    image.save(function (error, result) {
         if (error) {
             console.error(error);
             return;
         }
-        callback();
+        callback(result);
     });
 }
 exports.setImage = setImage;
-function getImage(imageId, callback) {
-    Images.find({ _id: new mongodb.ObjectID(imageId) }, function (error, image) {
+/**
+ * Public function for get an image in Image Collection
+ * @param imageName
+ * @param callback
+ */
+function getImage(imageName, callback) {
+    imageName = imageName.substring(0, imageName.indexOf('.'));
+    Image.find({ name: imageName }, function (error, result) {
         if (error) {
             console.error(error);
             return;
         }
-        console.log(imageId);
-        console.log(image);
-        callback(image);
+        callback(result[0]);
     });
 }
 exports.getImage = getImage;
+/**
+ * Public function for get all images in Image Collection
+ * @param callback
+ */
 function getImages(callback) {
-    Images.find().toArray(function (error, images) {
-        callback(images);
+    Image.find({}, function (error, result) {
+        if (error) {
+            console.error(error);
+            return;
+        }
+        callback(result);
     });
 }
 exports.getImages = getImages;
-/*
-MongoClient.connect(mongoURL, function(err, db) {
-    if (err) throw err;
-    let imagesCollection = db.collection('images')
-
-    imagesCollection.remove({});
-
-    imagesCollection.find().toArray(function (err, result) {
-        if (err) throw err;
-
-        console.log(result)
-    });
-
-    db.close();
-});
-*/ 

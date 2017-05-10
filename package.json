@@ -10,8 +10,10 @@
     "express": "~4.15.2",
     "fs": "0.0.1-security",
     "jimp": "^0.2.27",
+    "moment": "^2.18.1",
     "mongodb": "^2.2.26",
     "mongoose": "^4.9.8",
+    "performance": "^1.1.1",
     "request": "^2.81.0"
   }
 }
