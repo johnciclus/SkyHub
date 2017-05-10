@@ -9,6 +9,7 @@ var ImageFunctions_1 = require("./ImageFunctions");
 var url = "http://54.152.221.29/images.json";
 var app = express();
 var initialTime = moment();
+var finalTime, diff;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.listen(3000, function () {
@@ -18,6 +19,7 @@ app.listen(3000, function () {
  * Definition of GET request of the URL /, that generates a list of images with url
  */
 app.get('/', function (req, res) {
+    initialTime = moment();
     dbMongoose.getImages(function (images) {
         var response = [];
         var name, url;
@@ -28,6 +30,7 @@ app.get('/', function (req, res) {
             response.push({ url: url }); //small: path+name+"-small.jpg", medium: path+name+"-medium.jpg", large: path+name+"-large.jpg"})
         }
         res.setHeader('Content-Type', 'application/json');
+        printDuration();
         return res.send(JSON.stringify(response));
     });
 });
@@ -78,6 +81,9 @@ request(url, function (error, response, body) {
             });
         });
     }
-    var finalTime = moment();
-    console.log(moment.duration(finalTime.diff(initialTime)));
 });
+function printDuration() {
+    finalTime = moment();
+    diff = moment.duration(finalTime.diff(initialTime));
+    console.log(diff._milliseconds + ' milliseconds');
+}
